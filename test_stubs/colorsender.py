@@ -35,6 +35,7 @@ for z in range(0, 50):
     #print("> CONFIG: 0b{:08b}".format(radio.r_register(0x00, 1)[0]))
     #print("> STATUS: 0b{:08b}".format(radio.getstatus()))
     #print(">   FIFO: 0b{:08b}".format(radio.r_register(0x17, 1)[0]))
+    time.sleep(1)
 
 #print("Status: 0b{:08b}".format(radio.getstatus()))
 #print("")
