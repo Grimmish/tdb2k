@@ -1,0 +1,43 @@
+#include <Arduino.h>
+#include <BMA_Headunit.h>
+#include <SoftwareSerial.h>
+
+BMA_Headunit::BMA_Headunit(uint8_t receivePin, uint8_t transmitPin);
+
+bool BMA_Headunit::ping()
+{
+	print('?');
+	long timeanchor = micros();
+	while (micros() - timeanchor < 1000000) {
+		if (available()) {
+			byte b = read();
+			if (b == '!') {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void BMA_Headunit::printInt(int n) {
+	print('i');
+	write(n >> 8);
+	write(n & 255);
+}
+
+void BMA_Headunit::printTenths(int n, bool zeropadded) {
+	if (zeropadded) {
+		print('T');
+	}
+	else {
+		print('t');
+	}
+	write(n >> 8);
+	write(n & 255);
+}
+
+void BMA_Headunit::printString(char s[]) {
+	print('s');
+	print(s);
+}

@@ -1,16 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 # Caveman test for receiving simple pings with an RF24 over SPI
 
+import sys
 import time
 import spidev
-import bens_rf24
+from bens_rf24 import bens_rf24
 import wiringpi2 as wpi
-import sys
  
 wpi.wiringPiSetup()
 
-radio = bens_rf24.bens_rf24(debug=False)
+radio = bens_rf24(debug=False)
 
 radio.set_rx_pipeline(chan=0, enable=1, addr=0xE1E1E1E1E1)
 print("\nSet RX pipelines")

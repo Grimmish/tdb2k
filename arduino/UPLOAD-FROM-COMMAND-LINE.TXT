@@ -1,0 +1,24 @@
+#
+# Ben's notes to self. Hello future me!
+#
+
+# Review official command-line docs:
+#   https://github.com/arduino/Arduino/blob/master/build/shared/manpage.adoc
+#
+# Use the IDE to install custom libraries & boards: Tools->Board->Board Manager
+#
+# To use the custom boards at the command line they may need to be moved to
+# ~/Arduino. The CLI is looking for this file:
+#             ~/Arduino/hardware/<PACKAGE>/<ARCH>/boards.txt
+#       e.g., ~/Arduino/hardware/adafruit/avr/boards.txt
+
+# On the Lenovo T460p laptop, the Trinkets seem to show up on /dev/ttyS0, but
+# set up ~/.arduino15/preferences.txt properly and you won't need to specify that
+
+./arduino --upload --board adafruit:avr:trinket3 --port /dev/ttyS0 sketchbook/thingy/thingy.ino
+
+# Example: Upload to genuine Uno
+./arduino --upload --board arduino:avr:uno --port /dev/ttyACM0 ~/Arduino/Nanpy/Nanpy.ino
+
+# Example: Upload to ProTrinket (5v)
+./arduino --upload --board adafruit:avr:protrinket5 ~/Arduino/ProTrinket_RF24-demo_xmit/ProTrinket_RF24-demo_xmit.ino
