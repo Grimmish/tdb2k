@@ -44,6 +44,13 @@ void setup() {
   matrix.println();
   matrix.writeDisplay();
 }
+
+void setRGBLED(int r, int g, int b) {
+  digitalWrite(RGB_R, r);
+  digitalWrite(RGB_B, b);
+  digitalWrite(RGB_G, g);
+}
+
 void loop() {
   if (digitalRead(RESETBUTTON) == LOW) {
     ctr = 0;
@@ -55,54 +62,48 @@ void loop() {
     if (!len) {
       continue;
     }
-
+    String phrase;
     radio.read(receive_payload, len);
     switch (receive_payload[0]) {
-      case 'R':
-        digitalWrite(RGB_R, HIGH);
-        digitalWrite(RGB_G, LOW);
-        digitalWrite(RGB_B, LOW);
+      case 'D':
+        // Write something to the 7-segment display
+        phrase = String(receive_payload);
+        if (phrase.indexOf('.') == -1) {
+          // No decimal; assume integer
+          matrix.println(phrase.substring(1).toInt());
+        }
+        else {
+          // Looks like a decimal
+          //matrix.println(phrase.substring(1).toDouble());
+          matrix.print(0xBEEF, HEX);
+        }
+        matrix.writeDisplay();
         break;
-      case 'G':
-        digitalWrite(RGB_R, LOW);
-        digitalWrite(RGB_G, HIGH);
-        digitalWrite(RGB_B, LOW);
+      case 'L':
+        // Set a color on the LED
+        switch (receive_payload[1]) {
+          case 'R':
+            setRGBLED(HIGH, LOW, LOW); break;
+          case 'G':
+            setRGBLED(LOW, HIGH, LOW); break;
+          case 'B':
+            setRGBLED(LOW, LOW, HIGH); break;
+          case 'Y':
+            setRGBLED(HIGH, HIGH, LOW); break;
+          case 'P':
+            setRGBLED(HIGH, LOW, HIGH); break;
+          case 'C':
+            setRGBLED(LOW, HIGH, HIGH); break;
+          case 'W':
+            setRGBLED(HIGH, HIGH, HIGH); break;
+          default:
+            setRGBLED(LOW, LOW, LOW); break;
         break;
-      case 'B':
-        digitalWrite(RGB_R, LOW);
-        digitalWrite(RGB_G, LOW);
-        digitalWrite(RGB_B, HIGH);
-        break;
-      case 'Y':
-        digitalWrite(RGB_R, HIGH);
-        digitalWrite(RGB_G, HIGH);
-        digitalWrite(RGB_B, LOW);
-        break;
-      case 'P':
-        digitalWrite(RGB_R, HIGH);
-        digitalWrite(RGB_G, LOW);
-        digitalWrite(RGB_B, HIGH);
-        break;
-      case 'C':
-        digitalWrite(RGB_R, LOW);
-        digitalWrite(RGB_G, HIGH);
-        digitalWrite(RGB_B, HIGH);
-        break;
-      case 'W':
-        digitalWrite(RGB_R, HIGH);
-        digitalWrite(RGB_G, HIGH);
-        digitalWrite(RGB_B, HIGH);
-        break;
-      default:
-        digitalWrite(RGB_R, LOW);
-        digitalWrite(RGB_G, LOW);
-        digitalWrite(RGB_B, LOW);
-        break;
+      }
     }
-
-    ctr++;
-    matrix.println(ctr);
-    matrix.writeDisplay();
+    //ctr++;
+    //matrix.println(ctr);
+    //matrix.writeDisplay();
   }
 
   /*
@@ -111,3 +112,4 @@ void loop() {
   delay(400);
   */
 }
+
