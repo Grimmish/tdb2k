@@ -11,26 +11,17 @@ import wiringpi2 as wpi
 wpi.wiringPiSetup()
 
 radio = bens_rf24(debug=False)
-
-#radio.set_rx_pipeline(chan=0, enable=1, addr=0xE1E1E1E1E1)
-#print("\nSet RX pipelines")
-
 radio.set_tx_mode()
-print("\nSet TX mode.")
-
 radio.set_tx_pipeline(addr=0xE1E1E1E1E1)
-print("\nSet up TX Pipeline")
-
 radio.activate()
-print("\nActivated the radio!")
 
 for z in range(0, 5):
   for tx in [ 'Red', 'Yellow', 'Green', 'Cyan', 'Blue', 'Purple', 'White', 'off' ]:
     xmitresult = radio.w_tx_payload([ord('L'), ord(tx[0])])
-    if xmitresult is False:
-      print("Failed after max retries - no acknowledgement")
+    if xmitresult > 0:
+      print("Packet sent successfully, {:d} attempts required".format(xmitresult))
     else:
-      print("Packet sent successfully, {:d} retries required".format(xmitresult))
+      print("Failed after max retries - no acknowledgement")
     
     #print("> CONFIG: 0b{:08b}".format(radio.r_register(0x00, 1)[0]))
     #print("> STATUS: 0b{:08b}".format(radio.getstatus()))

@@ -6,10 +6,12 @@ class bens_rf24:
     self.debug = debug;
     if debug:
       print("Initializing RF24 via /dev/spidev0.0")
+
     self.spi = spidev.SpiDev()
     self.spi.open(0,0)
 
     self.ce = 6
+    wpi.wiringPiSetup()
     wpi.pinMode(self.ce, wpi.GPIO.OUTPUT)
     wpi.digitalWrite(self.ce, 0)
 
@@ -97,7 +99,7 @@ class bens_rf24:
         self.w_register(0x07, [ 1<<4 ]) # Squelch the retransmit failure
         return False  # We failed
     self.w_register(0x07, [ 1<<5 ]) # Clear "TX successful" flag to reset state
-    return self.r_register(0x08, 1)[0] & 0b1111  # The number of retries it took
+    return 1 + (self.r_register(0x08, 1)[0] & 0b1111)  # The number of attempts it took (1+retries)
 
   def r_register(self, register, length):
     packet = [0x00 | register] + ([0] * length)
