@@ -157,6 +157,8 @@ class bens_rf24:
   def set_tx_pipeline(self, addr=None):
     if addr is not None:
       self.w_register(0x10, self.to_bytes(addr & 0xFFFFFFFFFF, 5)) # Limit to 5 bytes
+      # The RX0 pipe must have the same address as TX for ACKs to work
+      self.set_rx_pipeline(chan=0, enable=1, addr=addr)
 
   def destroy(self):
     self.deactivate()
