@@ -15,7 +15,8 @@ RF24 radio(5, 6); // CE, CSN
 #define RGB_G 9
 #define RGB_B 8
 
-#define RESETBUTTON 4
+#define BUT_G 3
+#define BUT_R 4
 
 int ctr = 0;
 char receive_payload[33]; // Need +1 byte for terminating char
@@ -37,8 +38,10 @@ void setup() {
   pinMode(RGB_B, OUTPUT);
   digitalWrite(RGB_B, LOW);
 
-  pinMode(RESETBUTTON, INPUT_PULLUP);
-  digitalWrite(RESETBUTTON, HIGH);
+  pinMode(BUT_G, INPUT_PULLUP);
+  digitalWrite(BUT_G, HIGH);
+  pinMode(BUT_R, INPUT_PULLUP);
+  digitalWrite(BUT_R, HIGH);
 
   matrix.begin(0x70);
   matrix.println();
@@ -52,34 +55,17 @@ void setRGBLED(int r, int g, int b) {
 }
 
 void loop() {
-  if (digitalRead(RESETBUTTON) == LOW) {
-    //ctr = 0;
-    //matrix.println(ctr);
-    //matrix.writeDisplay();
-
-	// Simple count up and down
-    String foo = "D1234";
-    String bar = "D77";
-    matrix.println(foo.substring(1).toInt());
+  if (digitalRead(BUT_R) == LOW) {
+    ctr--;
+    matrix.println(ctr);
     matrix.writeDisplay();
-    delay(1000);
-    matrix.println(bar.substring(1).toInt());
-    matrix.writeDisplay();
-
-    /*
-	for (int i = 4; i < 9999; i *= 2) {
-		matrix.println(i);
-		matrix.writeDisplay();
-		delay(400);
-	}
-	for (int i = 8192; i > 4; i /= 2) {
-		matrix.println(i);
-		matrix.writeDisplay();
-		delay(400);
-	}
-    */
-    
   }
+  if (digitalRead(BUT_G) == LOW) {
+    ctr++;
+    matrix.println(ctr);
+    matrix.writeDisplay();
+  }
+
   while (radio.available()) {
     uint8_t len = radio.getDynamicPayloadSize();
     if (!len) {
@@ -97,7 +83,8 @@ void loop() {
         phrase = String(receive_payload);
         if (phrase.indexOf('.') == -1) {
           // No decimal; assume integer
-          matrix.println(phrase.substring(1).toInt());
+          ctr = phrase.substring(1).toInt();
+          matrix.println(ctr);
           matrix.writeDisplay();
         }
         else {
