@@ -53,9 +53,32 @@ void setRGBLED(int r, int g, int b) {
 
 void loop() {
   if (digitalRead(RESETBUTTON) == LOW) {
-    ctr = 0;
-    matrix.println(ctr);
+    //ctr = 0;
+    //matrix.println(ctr);
+    //matrix.writeDisplay();
+
+	// Simple count up and down
+    String foo = "D1234";
+    String bar = "D77";
+    matrix.println(foo.substring(1).toInt());
     matrix.writeDisplay();
+    delay(1000);
+    matrix.println(bar.substring(1).toInt());
+    matrix.writeDisplay();
+
+    /*
+	for (int i = 4; i < 9999; i *= 2) {
+		matrix.println(i);
+		matrix.writeDisplay();
+		delay(400);
+	}
+	for (int i = 8192; i > 4; i /= 2) {
+		matrix.println(i);
+		matrix.writeDisplay();
+		delay(400);
+	}
+    */
+    
   }
   while (radio.available()) {
     uint8_t len = radio.getDynamicPayloadSize();
@@ -63,6 +86,10 @@ void loop() {
       continue;
     }
     String phrase;
+
+    // Need to clear the array before reading in a new value
+    // to reset the "end-of-string" marker
+    memset(receive_payload, 0, sizeof receive_payload);
     radio.read(receive_payload, len);
     switch (receive_payload[0]) {
       case 'D':
@@ -71,13 +98,15 @@ void loop() {
         if (phrase.indexOf('.') == -1) {
           // No decimal; assume integer
           matrix.println(phrase.substring(1).toInt());
+          matrix.writeDisplay();
         }
         else {
           // Looks like a decimal
           //matrix.println(phrase.substring(1).toDouble());
           matrix.print(0xBEEF, HEX);
+          matrix.writeDisplay();
         }
-        matrix.writeDisplay();
+        
         break;
       case 'L':
         // Set a color on the LED
