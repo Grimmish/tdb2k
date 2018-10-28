@@ -90,6 +90,27 @@ void setRGBLED(int r, int g, int b) {
   digitalWrite(RGB_G, g);
 }
 
+void setLEDcolor(char c) {
+  switch (c) {
+    case 'R':
+      setRGBLED(HIGH, LOW, LOW); break;
+    case 'G':
+      setRGBLED(LOW, HIGH, LOW); break;
+    case 'B':
+      setRGBLED(LOW, LOW, HIGH); break;
+    case 'Y':
+      setRGBLED(HIGH, HIGH, LOW); break;
+    case 'P':
+      setRGBLED(HIGH, LOW, HIGH); break;
+    case 'C':
+      setRGBLED(LOW, HIGH, HIGH); break;
+    case 'W':
+      setRGBLED(HIGH, HIGH, HIGH); break;
+    default:
+      setRGBLED(LOW, LOW, LOW); break;
+  }
+}
+
 void loop() {
   checkButtonStates(); // Call this in the main loop too, for INT misses
   if (buttonChanged) {
@@ -122,59 +143,25 @@ void loop() {
     }
     String phrase;
 
-    // Need to clear the array before reading in a new value
-    // to reset the "end-of-string" marker
+    // memset to wipe out previous "end-of-string" marker
     memset(receive_payload, 0, sizeof receive_payload);
     radio.read(receive_payload, len);
     switch (receive_payload[0]) {
       case 'D':
         // Write something to the 7-segment display
         phrase = String(receive_payload);
-        if (phrase.indexOf('.') == -1) {
-          // No decimal; assume integer
-          ctr = phrase.substring(1).toInt();
-          matrix.println(ctr);
-          matrix.writeDisplay();
-        }
-        else {
-          // Looks like a decimal
+        if (phrase.indexOf('.') > -1) { // Decimal point? Assume float
           matrix.println(phrase.substring(1).toFloat());
-          //matrix.print(0xBEEF, HEX);
-          matrix.writeDisplay();
+        } else { // Integer
+          matrix.println(phrase.substring(1).toInt());
         }
-        
+        matrix.writeDisplay();
         break;
       case 'L':
         // Set a color on the LED
-        switch (receive_payload[1]) {
-          case 'R':
-            setRGBLED(HIGH, LOW, LOW); break;
-          case 'G':
-            setRGBLED(LOW, HIGH, LOW); break;
-          case 'B':
-            setRGBLED(LOW, LOW, HIGH); break;
-          case 'Y':
-            setRGBLED(HIGH, HIGH, LOW); break;
-          case 'P':
-            setRGBLED(HIGH, LOW, HIGH); break;
-          case 'C':
-            setRGBLED(LOW, HIGH, HIGH); break;
-          case 'W':
-            setRGBLED(HIGH, HIGH, HIGH); break;
-          default:
-            setRGBLED(LOW, LOW, LOW); break;
+        setLEDcolor(receive_payload[1]);
         break;
-      }
     }
-    //ctr++;
-    //matrix.println(ctr);
-    //matrix.writeDisplay();
   }
-
-  /*
-  const char text[] = "PING!";
-  radio.write(&text, sizeof(text));
-  delay(400);
-  */
 }
 
