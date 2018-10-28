@@ -5,6 +5,7 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 #include <Wire.h>
+#include <pins_arduino.h>
 #include "BMA_Adafruit_LEDBackpack.h"
 
 BMA_Adafruit_7segment matrix = BMA_Adafruit_7segment();
@@ -18,8 +19,24 @@ RF24 radio(5, 6); // CE, CSN
 #define BUT_G 3
 #define BUT_R 4
 
+#define DOWN LOW
+#define UP HIGH
+
 int ctr = 0;
 char receive_payload[33]; // Need +1 byte for terminating char
+
+volatile unsigned long lastISR = 0;
+volatile int buttonState[5] = {UP, UP, UP, UP, UP};
+volatile byte buttonChanged = 0;
+
+void setupButton(byte pin) {
+  pinMode(pin, INPUT_PULLUP);
+  digitalWrite(pin, HIGH);
+  // Enable pin-change interrupt on a given pin
+  *digitalPinToPCMSK(pin) |= bit (digitalPinToPCMSKbit(pin));  // enable pin
+  PCIFR  |= bit (digitalPinToPCICRbit(pin)); // clear any outstanding interrupt
+  PCICR  |= bit (digitalPinToPCICRbit(pin)); // enable interrupt for the group
+}
 
 void setup() {
   radio.begin();
@@ -38,14 +55,33 @@ void setup() {
   pinMode(RGB_B, OUTPUT);
   digitalWrite(RGB_B, LOW);
 
-  pinMode(BUT_G, INPUT_PULLUP);
-  digitalWrite(BUT_G, HIGH);
-  pinMode(BUT_R, INPUT_PULLUP);
-  digitalWrite(BUT_R, HIGH);
+  setupButton(BUT_G);
+  setupButton(BUT_R);
 
   matrix.begin(0x70);
-  matrix.println();
+  matrix.println(ctr);
   matrix.writeDisplay();
+}
+
+void checkButtonStates() {
+  if (micros() - lastISR > 4000) {
+    // More than 1ms since last interrupt? Probably not a bounce.
+	if (buttonState[BUT_R] != digitalRead(BUT_R)) {
+      buttonState[BUT_R] = digitalRead(BUT_R);
+      buttonChanged |= 1<<BUT_R;
+      lastISR = micros();
+    }
+	if (buttonState[BUT_G] != digitalRead(BUT_G)) {
+      buttonState[BUT_G] = digitalRead(BUT_G);
+      buttonChanged |= 1<<BUT_G;
+      lastISR = micros();
+    }
+  }
+}
+
+// Pin-change handler for digital pins 0 - 7
+ISR (PCINT2_vect) {
+  checkButtonStates();
 }
 
 void setRGBLED(int r, int g, int b) {
@@ -55,13 +91,26 @@ void setRGBLED(int r, int g, int b) {
 }
 
 void loop() {
-  if (digitalRead(BUT_R) == LOW) {
-    ctr--;
-    matrix.println(ctr);
-    matrix.writeDisplay();
-  }
-  if (digitalRead(BUT_G) == LOW) {
-    ctr++;
+  checkButtonStates(); // Call this in the main loop too, for INT misses
+  if (buttonChanged) {
+    if (buttonChanged & 1<<BUT_R) {
+      if (buttonState[BUT_R] == DOWN) {
+        setRGBLED(0, 0, 1);
+      } else {
+        setRGBLED(1, 0, 0);
+      }
+      ctr--;
+      buttonChanged &= ~(1<<BUT_R);
+    }
+    if (buttonChanged & 1<<BUT_G) {
+      if (buttonState[BUT_G] == DOWN) {
+        setRGBLED(0, 0, 1);
+      } else {
+        setRGBLED(0, 1, 0);
+      }
+      ctr++;
+      buttonChanged &= ~(1<<BUT_G);
+    }
     matrix.println(ctr);
     matrix.writeDisplay();
   }
