@@ -138,8 +138,8 @@ void loop() {
         }
         else {
           // Looks like a decimal
-          //matrix.println(phrase.substring(1).toDouble());
-          matrix.print(0xBEEF, HEX);
+          matrix.println(phrase.substring(1).toFloat());
+          //matrix.print(0xBEEF, HEX);
           matrix.writeDisplay();
         }
         
