@@ -114,26 +114,30 @@ void setLEDcolor(char c) {
 void loop() {
   checkButtonStates(); // Call this in the main loop too, for INT misses
   if (buttonChanged) {
+    radio.stopListening();
+    // Sentence construction: [Button][button#][state: 1=press 0=release]
+    char xmit[3];
+    xmit[0] = 'B';
     if (buttonChanged & 1<<BUT_R) {
+      xmit[1] = '1';
       if (buttonState[BUT_R] == DOWN) {
-        setRGBLED(0, 0, 1);
+        xmit[2] = '1';
       } else {
-        setRGBLED(1, 0, 0);
+        xmit[2] = '0';
       }
-      ctr--;
       buttonChanged &= ~(1<<BUT_R);
     }
     if (buttonChanged & 1<<BUT_G) {
+      xmit[1] = '2';
       if (buttonState[BUT_G] == DOWN) {
-        setRGBLED(0, 0, 1);
+        xmit[2] = '1';
       } else {
-        setRGBLED(0, 1, 0);
+        xmit[2] = '0';
       }
-      ctr++;
       buttonChanged &= ~(1<<BUT_G);
     }
-    matrix.println(ctr);
-    matrix.writeDisplay();
+    radio.write(&xmit, sizeof(xmit));
+    radio.startListening();
   }
 
   while (radio.available()) {
