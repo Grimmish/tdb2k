@@ -1,9 +1,9 @@
 # Various notes
 ## [Arduino --> ODroid] sentences
 One byte register:
-| Bit (1<<x) | Significance |
+| Bit | Significance |
 | ---------- | ------------ |
-| 7:6 | Type: 11 
+| 7:6 | Type: 11 |
 
 ## [Arduino <-- ODroid] sentences
 
