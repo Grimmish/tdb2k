@@ -564,12 +564,19 @@ void BMA_Adafruit_7segment::printFloat(double n, uint8_t fracDigits, uint8_t bas
 { 
   uint8_t numericDigits = 4;   // available digits on display
   boolean isNegative = false;  // true if the number is negative
+  boolean isSmall = false;     // true if the number is between -1 and 1
   
   // is the number negative?
   if(n < 0) {
     isNegative = true;  // need to draw sign later
     --numericDigits;    // the sign will take up one digit
     n *= -1;            // pretend the number is positive
+  }
+  
+  // is the number less than 1?
+  if(n < 1) {
+    isSmall = true;     // need leading zero
+    --numericDigits;    // the leading zero will take up one digit
   }
   
   // calculate the factor required to shift all fractional digits
@@ -613,6 +620,22 @@ void BMA_Adafruit_7segment::printFloat(double n, uint8_t fracDigits, uint8_t bas
       writeDigitNum(displayPos--, 0, false);
     }
   
+    // display leading zero
+    if(isSmall) {
+         writeDigitNum(displayPos--, 0, true); /* BMAHACK */
+/*
+       if (n < 0.1) {
+         writeDigitNum(displayPos--, 0, false);
+         if(displayPos == 2) writeDigitRaw(displayPos--, 0x00);  
+         writeDigitNum(displayPos--, 0, true);
+       }
+       else {
+         writeDigitNum(displayPos--, 0, true);
+       }
+*/
+    }
+    if(displayPos == 2) writeDigitRaw(displayPos--, 0x00);  
+
     // display negative sign if negative
     if(isNegative) writeDigitRaw(displayPos--, 0x40);
   

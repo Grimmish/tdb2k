@@ -155,7 +155,7 @@ void loop() {
         // Write something to the 7-segment display
         phrase = String(receive_payload);
         if (phrase.indexOf('.') > -1) { // Decimal point? Assume float
-          matrix.println(phrase.substring(1).toFloat());
+          matrix.println(phrase.substring(1).toFloat(), 1);
         } else { // Integer
           matrix.println(phrase.substring(1).toInt());
         }
