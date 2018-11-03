@@ -64,7 +64,7 @@ void setup() {
 }
 
 void checkButtonStates() {
-  if (micros() - lastISR > 4000) {
+  if (micros() - lastISR > 50000) {
     // Probably not a bounce.
     if (buttonState[BUT_R] != digitalRead(BUT_R)) {
       buttonState[BUT_R] = digitalRead(BUT_R);
