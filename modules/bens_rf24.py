@@ -24,10 +24,11 @@ class bens_rf24:
     self.MASK_MAX_RT = 1
     self.EN_CRC = 1
     self.CRCO = 1
-    self.PWR_UP = 0
-    self.PRIM_RX = 0
+    self.PWR_UP = 1
+    self.PRIM_RX = 1
     self.write_config()
 
+    #### Radio params (match the Arduino lib defaults)
     self.w_register(0x01, [0b00111111])  # EN_AA :: Auto-acknowledgement (on for all pipes)
     self.w_register(0x02, [0b00000000])  # EN_RXADDR :: Enabled RX pipes (disable all)
     self.w_register(0x03, [0b00000011])  # SETUP_AW :: Address space size (5 bytes)
@@ -44,14 +45,14 @@ class bens_rf24:
     self.w_register(0x1C, [0b00111111])  # DYNPD :: Dynamic payload (enable for all pipes)
     self.w_register(0x1D, [0b00000100])  # FEATURE :: Fancy bits (turn on dynamic payload sizing)
 
-    #### Radio params (match the Arduino lib defaults)
-
     ###
     ### Other housecleaning
     ###
     # Turn off all RX pipes
     for p in range(0,5):
       self.set_rx_pipeline(chan=p, enable=0)
+    # Clear all resettable status bits. Clean slate!
+    self.w_register(0x07, [0b01110000])
 
     # Flush FIFOs
     self.flush_rx()
@@ -86,7 +87,9 @@ class bens_rf24:
     return payload
 
   def w_tx_payload(self, payload, block=True):
-    self.transfer([0b10100000] + payload[:32])  # Limit to 32 bytes
+    self.set_tx_mode()
+    self.transfer([0b10100000] + payload[:32])  # Push payload into TX buffer
+    #FIXME wpi.digitalWrite(self.ce, 1)  # Come out of standby
     if not block:
       return None # Did it get there? Who cares! DON'T USE THIS.
 
@@ -97,10 +100,14 @@ class bens_rf24:
       if max_rt:
         self.flush_tx() # Clear the TX_FIFO
         self.w_register(0x07, [ 1<<4 ]) # Squelch the retransmit failure
+        self.set_rx_mode() # Always return to RX mode by default
         return False  # We failed
 
     self.w_register(0x07, [ 1<<5 ]) # Clear "TX successful" flag to reset state
-    return 1 + (self.r_register(0x08, 1)[0] & 0b1111)  # The number of attempts it took (1+retries)
+    wpi.digitalWrite(self.ce, 0)  # Back to standby
+    attempts = 1 + (self.r_register(0x08, 1)[0] & 0b1111)
+    self.set_rx_mode() # Always return to RX mode by default
+    return attempts
 
   def r_register(self, register, length):
     packet = [0x00 | register] + ([0] * length)
@@ -120,27 +127,24 @@ class bens_rf24:
     return self.r_register(0x17, 1)[0] & 1
 
   def activate(self):
-    self.PWR_UP = 1
-    self.write_config()
-    self.w_register(0x07, [0b01110000]) # Clear all resettable status bits. Clean slate!
+    #FIXME self.w_register(0x07, [0b01110000]) # Clear all resettable status bits. Clean slate!
     wpi.digitalWrite(self.ce, 1)
 
   def deactivate(self):
-    self.PWR_UP = 0
-    self.write_config()
     wpi.digitalWrite(self.ce, 0)
 
   def set_rx_mode(self):
     self.PRIM_RX = 1
     self.write_config()
-    wpi.digitalWrite(self.ce, 0)  # Found that CE must be pulsed low-high
-    wpi.digitalWrite(self.ce, 1)  # to fully activate new mode
+    #FIXME wpi.digitalWrite(self.ce, 1)  # Make sure radio is active
+    self.activate()
 
   def set_tx_mode(self):
     self.PRIM_RX = 0
     self.write_config()
-    wpi.digitalWrite(self.ce, 0)  # Found that CE must be pulsed low-high
-    wpi.digitalWrite(self.ce, 1)  # to fully activate new mode
+    #FIXME wpi.digitalWrite(self.ce, 0)  # Stay in standby until actual xmit
+    self.deactivate()  # Cycle the CE pin (apparently required)
+    self.activate()
 
   def set_rx_pipeline(self, chan=None, enable=None, addr=None, payloadlen=None):
     if not chan >= 0 or not chan < 6:

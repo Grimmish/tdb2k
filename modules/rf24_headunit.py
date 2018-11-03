@@ -8,13 +8,13 @@ class rf24_headunit():
   def display(self, payload):
     as_bytes = [ord('D')] + map(lambda x: ord(x), list(str(payload)))
     self.radio.set_tx_pipeline(self.addr)
-    self.radio.set_tx_mode()
+    #FIXME-AUTOMATIC-NOW self.radio.set_tx_mode()
     return self.radio.w_tx_payload(as_bytes)
 
   def led(self, color):
     as_bytes = [ord('L'), ord(color[0].upper())]
     self.radio.set_tx_pipeline(self.addr)
-    self.radio.set_tx_mode()
+    #FIXME-AUTOMATIC-NOW self.radio.set_tx_mode()
     return self.radio.w_tx_payload(as_bytes)
 
 ##########
