@@ -16,7 +16,7 @@ radio.debug_show_pipeconfig()
 
 radio.activate()
 radio.set_rx_mode()
-radio.set_rx_pipeline(chan=0, enable=1, addr=1)
+radio.set_rx_pipeline(chan=0, enable=1, addr=0xE0E0E0E0E0)
 print("\nActivated the radio!!!\n")
 radio.debug_show_pipeconfig()
 

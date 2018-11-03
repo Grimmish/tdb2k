@@ -98,6 +98,7 @@ class bens_rf24:
         self.flush_tx() # Clear the TX_FIFO
         self.w_register(0x07, [ 1<<4 ]) # Squelch the retransmit failure
         return False  # We failed
+
     self.w_register(0x07, [ 1<<5 ]) # Clear "TX successful" flag to reset state
     return 1 + (self.r_register(0x08, 1)[0] & 0b1111)  # The number of attempts it took (1+retries)
 
@@ -132,10 +133,14 @@ class bens_rf24:
   def set_rx_mode(self):
     self.PRIM_RX = 1
     self.write_config()
+    wpi.digitalWrite(self.ce, 0)  # Found that CE must be pulsed low-high
+    wpi.digitalWrite(self.ce, 1)  # to fully activate new mode
 
   def set_tx_mode(self):
     self.PRIM_RX = 0
     self.write_config()
+    wpi.digitalWrite(self.ce, 0)  # Found that CE must be pulsed low-high
+    wpi.digitalWrite(self.ce, 1)  # to fully activate new mode
 
   def set_rx_pipeline(self, chan=None, enable=None, addr=None, payloadlen=None):
     if not chan >= 0 or not chan < 6:
@@ -188,16 +193,52 @@ class bens_rf24:
     return ret
 
   def debug_show_pipeconfig(self):
-    # RX
     en_status = self.r_register(0x02, 1)[0]
     for p in range(0, 6):
       en = "ON" if (en_status>>p) & 1 else "off"
       addr = self.from_bytes(self.r_register(0x0A + p, 5))
       bytelen = self.r_register(0x11 + p, 1)[0]
       print("Pipe {:d}: [ {:3s} ] addr: 0x{:010X} -> Payload: {:d} bytes".format(p, en, addr, bytelen))
-
+  
     addr = self.from_bytes(self.r_register(0x10, 5))
     print("Pipe TX:        addr: 0x{:010X}".format(addr))
 
+  def debug_show_config(self):
+    stat = self.r_register(0x00, 1)[0]
+    print("CONFIG:")
+    print ("  " + ("-" * 21))
+    registers = ["PRIM_RX","PWR_UP","CRCO","EN_CRC","MASK_MAX_RT","MASK_TX_DS","MASK_RX_DR"]
+    for b in reversed(range(0,6)):
+      print("  | {:>11s} | {:<3b} |".format(registers[b], stat>>b & 1))
+    print ("  " + ("-" * 21))
+
+  def debug_show_status(self):
+    stat = self.r_register(0x07, 1)[0]
+    print("STATUS:")
+    print ("  " + ("-" * 21))
+    print ("  | {:>11s} | {:<3b} |".format("RX_DR", stat>>6 & 1))
+    print ("  | {:>11s} | {:<3b} |".format("TX_DS", stat>>5 & 1))
+    print ("  | {:>11s} | {:<3b} |".format("MAX_RT", stat>>4 & 1))
+    print ("  | {:>11s} | {:<03b} |".format("RX_P_NO", stat>>1 & 0b111))
+    print ("  | {:>11s} | {:<3b} |".format("TX_FULL", stat & 1))
+    print ("  " + ("-" * 21))
+
+  def debug_show_fifo(self):
+    stat = self.r_register(0x17, 1)[0]
+    print("FIFO:")
+    print ("  " + ("-" * 21))
+    registers = ["RX_EMPTY","RX_FULL",None,None,"TX_EMPTY","TX_FULL","TX_REUSE"]
+    for b in [6, 5, 4, 1, 0]:
+      print("  | {:>11s} | {:<3b} |".format(registers[b], stat>>b & 1))
+    print ("  " + ("-" * 21))
+    print ("  | {:>11s} | {:<3d} |".format("R_RX_PL_WID", self.transfer([0b01100000, 0])[1]))
+    print ("  " + ("-" * 21))
+
+  def debug_all(self):
+    self.debug_show_status()
+    self.debug_show_config()
+    self.debug_show_pipeconfig()
+    self.debug_show_fifo()
+  
 ##########
 
