@@ -11,6 +11,8 @@ from tdb2k_event import tdb2k_event
 from tdb2k_data import tdb2k_data
 #from tdb2k_gpio import tdb2k_gpio
 from tdb2k_display import tdb2k_display
+from bens_rf24 import bens_rf24
+from rf24_headunit import rf24_headunit
 
 if __name__ == "__main__":
     recorder = tdb2k_data()
@@ -19,6 +21,11 @@ if __name__ == "__main__":
     #                  startAction = evtmgr.doStartEvent,
     #                  stopPin = 1,
     #                  stopAction = evtmgr.doStopEvent)
+    radio = bens_rf24(debug=False)
+    radio.set_rx_pipeline(chan=1, enable=1, addr=0xE0E0E0E0E0)
+    headunit = rf24_headunit(radio=radio, addr=0xE1E1E1E1E1)
+    headunit.led("Black")
+    headunit.display(0)
 
     root = tk.Tk()
     root.title("TDB2k ALPHA")
@@ -67,8 +74,10 @@ if __name__ == "__main__":
               recorder.update(gps = {"lat": lat, "lon": lon, "alt": alt})
               if recorder.ghost:
                   window.timer.set("%+03.1f" % recorder.store[-1]["points"][-1]["delta"])
+                  headunit.display(recorder.store[-1]["points"][-1]["delta"])
               else:
                   window.timer.set("%03.1f" % recorder.store[-1]["points"][-1]["sessiontime"])
+                  headunit.display(recorder.store[-1]["points"][-1]["sessiontime"])
 
             evtmgr.doUpdateEvent()
 
