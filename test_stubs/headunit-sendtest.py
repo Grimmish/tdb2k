@@ -4,9 +4,6 @@ import sys
 import time
 from bens_rf24 import bens_rf24
 from rf24_headunit import rf24_headunit
-import wiringpi2 as wpi
- 
-wpi.wiringPiSetup()
 
 radio = bens_rf24(debug=False)
 headunit = rf24_headunit(radio=radio, addr=0xE1E1E1E1E1)

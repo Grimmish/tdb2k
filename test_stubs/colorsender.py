@@ -6,9 +6,6 @@ import sys
 import time
 import spidev
 from bens_rf24 import bens_rf24
-import wiringpi2 as wpi
- 
-wpi.wiringPiSetup()
 
 radio = bens_rf24(debug=False)
 radio.set_tx_pipeline(addr=0xE1E1E1E1E1)
