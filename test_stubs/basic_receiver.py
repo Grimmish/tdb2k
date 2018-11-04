@@ -14,8 +14,7 @@ radio = bens_rf24.bens_rf24(debug=False)
 print("\nFinished initializing. RX pipeline status:")
 radio.debug_show_pipeconfig()
 
-radio.activate()
-radio.set_rx_mode()
+radio.set_rx_mode() # Not really necessary; RX mode is default
 radio.set_rx_pipeline(chan=0, enable=1, addr=0xE0E0E0E0E0)
 print("\nActivated the radio!!!\n")
 radio.debug_show_pipeconfig()
@@ -26,9 +25,6 @@ for i in range(0, 20):
   else:
     print(" [ {:d} ] (No data)".format(i))
   time.sleep(0.5)
-
-radio.deactivate()
-print("Deactivated the radio")
 
 radio.set_rx_pipeline(chan=0, enable=0)
 print("Shut down pipeline 0")

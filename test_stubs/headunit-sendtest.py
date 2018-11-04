@@ -9,7 +9,7 @@ import wiringpi2 as wpi
 wpi.wiringPiSetup()
 
 radio = bens_rf24(debug=False)
-headunit = rf24_headunit(radio=radio, rxpipe=1, addr=0xE1E1E1E1E1)
+headunit = rf24_headunit(radio=radio, addr=0xE1E1E1E1E1)
 
 z = 1
 colors = [ 'Red', 'Yellow', 'Green', 'Cyan', 'Blue', 'Purple', 'White', 'off' ]
@@ -30,8 +30,6 @@ while z > 0:
   time.sleep(0.5)
   z /= 2
 
-radio.deactivate()
-print("Deactivated the radio")
 radio.destroy()
 print("SPI closed")
 
