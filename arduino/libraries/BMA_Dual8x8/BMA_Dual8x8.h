@@ -28,6 +28,8 @@ class BMA_Dual8x8 {
   void clear(void);
   void drawPixel(int16_t x, int16_t y, uint16_t color);
   void drawMiniChar(int16_t x, int16_t y, unsigned char c, uint16_t color);
+  void printError(void);
+  void printDec(double n, uint16_t color);
 
   uint8_t _width;
   uint8_t _height;

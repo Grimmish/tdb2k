@@ -10,15 +10,12 @@
  
 // Compact 3x5 font
 // Format:
-//   Each 16-bit word expresses the bitmap as five 3-bit
-//   rows, LSB-first, left-to-right, beginning with the
-//   top row. The highest bit in each word is unused.
-// What is "PROGMEM"?
-//   https://www.arduino.cc/reference/en/language/variables/utilities/progmem/
+//   Each 16-bit word expresses the bitmap as five 3-bit rows, LSB-first, left-
+//   to-right, beginning with the top row. The highest bit in each word is unused.
+// "PROGMEM": https://www.arduino.cc/reference/en/language/variables/utilities/progmem/
 
 // Handy Perl one-liner to turn "0b"-style bitstrings into hex:
 //   perl -pe '$_ = sprintf("  0x%04x,\n", eval $_)'
-
 static const unsigned int minifont[] PROGMEM = {
   0x0aa8,
   0x0aa8,

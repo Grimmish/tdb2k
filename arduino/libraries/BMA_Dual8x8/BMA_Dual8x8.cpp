@@ -18,8 +18,7 @@
   #define _BV(bit) (1<<(bit))
 #endif
 
-BMA_Dual8x8::BMA_Dual8x8(void)
-{
+BMA_Dual8x8::BMA_Dual8x8(void) {
   for (int i=0; i<8; i++) {
     redbuffer[i] = 0;
     greenbuffer[i] = 0;
@@ -154,6 +153,51 @@ void BMA_Dual8x8::drawMiniChar(int16_t x, int16_t y, unsigned char c, uint16_t c
   }
 }
 
+void BMA_Dual8x8::printError(void) {
+  for (int i=1; i<16; i+=4) {
+    drawMiniChar(i, 1, 1, LED_RED);
+  }
+}
+
+void BMA_Dual8x8::printDec(double n, uint16_t color) {
+  uint8_t numericDigits = 3; // Max we can accommodate
+  boolean isNegative = false;
+
+  if (n < 0) {
+    isNegative = true;
+    --numericDigits;
+    n *= -1;
+  }
+
+  // Shift the decimal to the right so we can ignore the rest
+  uint32_t displayNumber = n * 10 + 0.5;
+
+  // What's the largest number we can display given current constraints?
+  uint32_t tooBig = 1;
+  for(int i = 0; i < numericDigits; ++i) tooBig *= 10;
+
+  clear();
+  if (displayNumber >= tooBig) {
+    printError();
+  } else {
+    // Render digits right-to-left; always render 2 right-most digits
+    char thisdigit = '0' + (displayNumber % 10);
+    drawMiniChar(12, 1, thisdigit, color);
+
+    drawPixel(10, 5, color);
+
+    thisdigit = '0' + ((displayNumber/10) % 10);
+    drawMiniChar(6, 1, thisdigit, color);
+
+    if (isNegative) {
+      drawMiniChar(2, 1, 0x2D, color);
+    }
+    else if (displayNumber > 100) {
+      thisdigit = '0' + ((displayNumber/100) % 10);
+      drawMiniChar(2, 1, thisdigit, color);
+    }
+  }
+}
 
 
 

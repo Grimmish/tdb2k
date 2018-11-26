@@ -38,26 +38,36 @@ int direction_y = 1;
 int bounce_c = LED_GREEN;
 
 void loop() {
+  for (double z=12.0; z > -10.5; z-=0.1) {
+    uint16_t color = LED_YELLOW;
+    if (z >= 2.0) { color = LED_GREEN; }
+    else if (z > -2.0) { color = LED_YELLOW; }
+    else { color = LED_RED; } 
+    scr.printDec(z, color);
+    scr.writeDisplay();
+    delay(DELAYCONST);
+  }
+  delay(DELAYCONST * 32);
 
-  for (int ch=120; ch<123; ch++) {
+  for (int ch=97; ch<101; ch++) {
     for (int z=16; z>7; z--) {
       scr.clear();
-      scr.drawMiniChar(z, 2, ch, LED_GREEN);
+      scr.drawMiniChar(z, ch-97, ch, LED_GREEN);
       scr.writeDisplay();
       delay(DELAYCONST);
     }
     delay(DELAYCONST * 8);
     for (int z=7; z>-4; z--) {
       scr.clear();
-      scr.drawMiniChar(z, 2, ch, LED_RED);
+      scr.drawMiniChar(z, ch-97, ch, LED_RED);
       scr.writeDisplay();
       delay(DELAYCONST);
     }
   }
+  delay(DELAYCONST * 32);
 
   scr.clear();
   scr.writeDisplay();
-
   for (int z=0; z<120; z++) {
     if ((bounce_x == 0) || (bounce_x == scr._width-1) || (bounce_y == 0) || (bounce_y == scr._height-1)) {
       bounce_c = LED_RED;
@@ -82,26 +92,23 @@ void loop() {
       bounce_y += direction_y * 2;
     }
   }
+  delay(DELAYCONST * 32);
 
   scr.clear();
   scr.writeDisplay();
-
-  for (int y=0; y<8; y += 2) {
-    for (int x=15; x>=0; x--) {
-      scr.greenbuffer[y] |= 1<<x;
+  for (int x=0; x<scr._width; x += 2) {
+    for (int y=0; y<scr._height; y++) {
+      scr.drawPixel(x, y, LED_GREEN);
       scr.writeDisplay();
       delay(DELAYCONST);
     }
-    scr.clear();
-    scr.writeDisplay();
-    for (int x=15; x>=0; x--) {
-      scr.redbuffer[y+1] |= 1<<x;
+    for (int y=0; y<scr._height; y++) {
+      scr.drawPixel(x+1, y, LED_RED);
       scr.writeDisplay();
       delay(DELAYCONST);
     }
-    scr.clear();
-    scr.writeDisplay();
   }
+  delay(DELAYCONST * 32);
 
   /*
   for (int z=0; z<8; z++) {
