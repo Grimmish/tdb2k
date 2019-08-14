@@ -96,6 +96,16 @@ void irIntFire() {
   }
 }
 
+void radioBroadcast() {
+  radio.stopListening();
+  // Sentence construction: [Ir unit][unit#]
+  char xmit[2];
+  xmit[0] = 'I';
+  xmit[1] = '1'; // Different value for every transceiver
+  radio.write(&xmit, sizeof(xmit));
+  radio.startListening();
+}
+
 void setup() {
   radio.begin();
   radio.openWritingPipe(0xE0E0E0E0E0);
@@ -103,7 +113,7 @@ void setup() {
   radio.openReadingPipe(1, 0xE1E1E1E1E2);
   radio.setPALevel(RF24_PA_MAX);
   radio.enableDynamicPayloads();
-  radio.stopListening();
+  radio.startListening();
 
   setupIRint();
 
@@ -157,6 +167,7 @@ void loop() {
 
   if (beamBroken) {
     if (millis() < TESTMODE_MS) {
+      radioBroadcast();
       digitalWrite(LED3, HIGH);
       piezoBeep(800);
     }
