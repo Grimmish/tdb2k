@@ -19,12 +19,13 @@ radio.set_rx_pipeline(chan=0, enable=1, addr=0xE0E0E0E0E0)
 print("\nActivated the radio!!!\n")
 radio.debug_show_pipeconfig()
 
-for i in range(0, 20):
+print("\nListening for 30 seconds:\n")
+for i in range(0, 300):
   if (radio.rx_dr()):
     print(" [ {:d} ] Payload: |{:s}|".format(i, "".join(map(chr, radio.r_rx_payload()))))
-  else:
-    print(" [ {:d} ] (No data)".format(i))
-  time.sleep(0.5)
+  #else:
+  #  print(" [ {:d} ] (No data)".format(i))
+  time.sleep(0.1)
 
 radio.set_rx_pipeline(chan=0, enable=0)
 print("Shut down pipeline 0")
