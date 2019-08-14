@@ -166,8 +166,8 @@ void loop() {
   }
 
   if (beamBroken) {
+    radioBroadcast();
     if (millis() < TESTMODE_MS) {
-      radioBroadcast();
       digitalWrite(LED3, HIGH);
       piezoBeep(800);
     }
