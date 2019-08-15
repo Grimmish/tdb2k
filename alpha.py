@@ -70,6 +70,15 @@ if __name__ == "__main__":
             (fixtime,lat,lon,quality,sats,alt) = gpshelp.parseGGA(line)
             qual = ("None","GPS","DGPS","PPS","RTK","F-RTK","Est","Man","Sim")[quality]
 
+            if radio.rx_dr():
+                if "".join(map(chr, radio.r_rx_payload())) == "I1":
+                    # FIXME: Need a debounce-type check here
+                    if recorder.active:
+                        evtmgr.doStopEvent();
+                    else:
+                        evtmgr.doStartEvent();
+
+
             if recorder.active:
               recorder.update(gps = {"lat": lat, "lon": lon, "alt": alt})
               if recorder.ghost:
