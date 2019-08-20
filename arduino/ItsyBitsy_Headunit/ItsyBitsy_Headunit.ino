@@ -158,6 +158,7 @@ void loop() {
       case 'D':
         // Write something to the display
         applyBitmapSentence(receive_payload);
+        scr.writeDisplay();
         break;
     }
   }
