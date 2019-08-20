@@ -8,16 +8,14 @@
 #include <pins_arduino.h>
 #include "BMA_Dual8x8.h"
 
-#define DELAYCONST 30
-
-//FIXME
-#define BTN_G 3
-#define BTN_R 4
+//FIXME - Need to adjust interrupt config if buttons aren't on GPIO 0-7
+#define BTN_G 11
+#define BTN_R 12
 
 #define DOWN LOW
-#define IP HIGH
+#define UP HIGH
 
-RF24 radio(5, 6); // CE, CSN
+RF24 radio(7, 10); // CE, CSN
 BMA_Dual8x8 scr = BMA_Dual8x8();
 
 char receive_payload[33]; // Need +1 byte for terminating char
@@ -79,6 +77,30 @@ void radioSendButton() {
   radio.startListening();
 }
 
+void tricolorWipe() {
+  int timestep = 20;
+  for (int z=15; z>=0; z--) {
+    for (int x=0; x<8; x++) { scr.greenbuffer[x] |= 1<<z; }
+    scr.writeDisplay();
+    delay(timestep);
+  }
+  for (int z=15; z>=0; z--) {
+    for (int x=0; x<8; x++) { scr.redbuffer[x] |= 1<<z; }
+    scr.writeDisplay();
+    delay(timestep);
+  }
+  for (int z=15; z>=0; z--) {
+    for (int x=0; x<8; x++) { scr.greenbuffer[x] &= ~(1<<z); }
+    scr.writeDisplay();
+    delay(timestep);
+  }
+  for (int z=15; z>=0; z--) {
+    for (int x=0; x<8; x++) { scr.redbuffer[x] &= ~(1<<z); }
+    scr.writeDisplay();
+    delay(timestep);
+  }
+}
+
 void applyBitmapSentence(char sentence[]) {
   switch (sentence[1]) {
     /*
@@ -127,6 +149,7 @@ void setup() {
   setupButton(BTN_R);
 
   scr.begin();
+  tricolorWipe();
 }
 
 /*
