@@ -1,5 +1,5 @@
 /*
-* Go Faster-Faster (GF2) headunit
+* IR Transceiver
 */
 #include <SPI.h>
 #include <nRF24L01.h>
