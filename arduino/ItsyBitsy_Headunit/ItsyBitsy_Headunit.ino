@@ -145,8 +145,8 @@ void setup() {
   radio.enableDynamicPayloads();
   radio.startListening();
 
-  setupButton(BTN_G);
-  setupButton(BTN_R);
+  //setupButton(BTN_G);
+  //setupButton(BTN_R);
 
   scr.begin();
   tricolorWipe();
