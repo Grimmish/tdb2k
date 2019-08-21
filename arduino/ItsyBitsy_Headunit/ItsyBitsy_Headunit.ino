@@ -114,12 +114,13 @@ void applyBitmapSentence(char sentence[]) {
     */
     case 'R':
       for (int i=0; i<8; i++) {
-        scr.redbuffer[i] = sentence[2+(i*2)]<<8 | sentence[2+(i*2)+1];
+        scr.redbuffer[i] = sentence[2+(i*2)]<<8 | (sentence[2+(i*2)+1] & 0xFF);
       }
       break;
     case 'G':
       for (int i=0; i<8; i++) {
-        scr.greenbuffer[i] = sentence[2+(i*2)]<<8 | sentence[2+(i*2)+1];
+        //scr.greenbuffer[i] = sentence[2+(i*2)]<<8 | sentence[2+(i*2)+1];
+        scr.greenbuffer[i] = sentence[2+(i*2)]<<8 | (sentence[2+(i*2)+1] & 0xFF);
       }
       break;
   }
