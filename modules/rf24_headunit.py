@@ -1,9 +1,4 @@
 import bens_rf24
- 
-class rf24_headunit():
-  def __init__(self, radio, addr=0xE7E7E7E7E7):
-    self.radio = radio
-    self.addr = addr
 
 class rf24_headunit():
   def __init__(self, radio, addr=0xE7E7E7E7E7):
@@ -20,7 +15,7 @@ class rf24_headunit():
     c.extend([i>>8, i & 0xFF]
     return c
 
-  def display(self, payload):
+  def sendBuffer(self):
     self.radio.set_tx_pipeline(self.addr)
     rchan = [ord('D'), ord('R')] + reduce(self.fbreducer, self.fb['R'], [])
     gchan = [ord('D'), ord('R')] + reduce(self.fbreducer, self.fb['G'], [])
