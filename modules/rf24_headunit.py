@@ -11,14 +11,14 @@ class rf24_headunit():
                 'G': [0,0,0,0,0,0,0,0] }
 
   # Break the 16-bit framebuffer rows into 8-bit words
-  def fbreducer(c, i):
-    c.extend([i>>8, i & 0xFF]
+  def fbreducer(self, c, i):
+    c.extend([i>>8, i & 0xFF])
     return c
 
   def sendBuffer(self):
     self.radio.set_tx_pipeline(self.addr)
     rchan = [ord('D'), ord('R')] + reduce(self.fbreducer, self.fb['R'], [])
-    gchan = [ord('D'), ord('R')] + reduce(self.fbreducer, self.fb['G'], [])
+    gchan = [ord('D'), ord('G')] + reduce(self.fbreducer, self.fb['G'], [])
     return self.radio.w_tx_payload(rchan) and self.radio.w_tx_payload(gchan)
 
 ##########
