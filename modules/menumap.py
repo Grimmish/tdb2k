@@ -48,22 +48,19 @@ configmenu = [
       {
         'label': "AAA",
         'labeltype': 'string',
-        'action': 'function',
       },
       {
         'label': "BBB",
         'labeltype': 'string',
-        'action': 'function',
       },
       {
         'label': "CCC",
         'labeltype': 'string',
-        'action': 'function',
       },
       {
         'label': 'goback',
         'labeltype': 'pixart',
-        'action': 'back'
+        'backbutton': True
       }
     ]
   },
