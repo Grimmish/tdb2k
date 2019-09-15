@@ -8,19 +8,29 @@
 #include <pins_arduino.h>
 #include "BMA_Dual8x8.h"
 
-//FIXME - Need to adjust interrupt config if buttons aren't on GPIO 0-7
 #define BTN_G 11
 #define BTN_R 12
+#define BTN_Y 13
+
+// How much radio silence before we start pinging home?
+#define PINGTHRESH 1000000
+// How much radio silence before we throw a visual warning?
+#define WARNTHRESH 3000000
 
 #define DOWN LOW
 #define UP HIGH
 
-RF24 radio(7, 10); // CE, CSN
+#define CALL '0'
+#define RESPONSE '1'
+
+RF24 radio(7, 5); // CE, CSN
 BMA_Dual8x8 scr = BMA_Dual8x8();
 
 char receive_payload[33]; // Need +1 byte for terminating char
 
 volatile unsigned long lastISR = 0;
+volatile unsigned long lastcontact = 0;
+volatile unsigned long lastpingcall = 0;
 // The BTN_G/BTN_R constants will be used as indexes for this array
 volatile int buttonState[5] = {UP, UP, UP, UP, UP};
 volatile int buttonChanged = 0;
@@ -47,7 +57,23 @@ void checkButtonStates() {
       buttonChanged |= 1<<BTN_G;
       lastISR = micros();
     }
+    if (buttonState[BTN_Y] != digitalRead(BTN_Y)) {
+      buttonState[BTN_Y] = digitalRead(BTN_Y);
+      buttonChanged |= 1<<BTN_Y;
+      lastISR = micros();
+    }
   }
+}
+
+void radioSendPing(char callorresponse) {
+  radio.stopListening();
+  // Sentence construction: [Ping][0(call) or 1(response)]
+  char xmit[2];
+  xmit[0] = 'P';
+  xmit[1] = callorresponse;
+  radio.write(&xmit, sizeof(xmit));
+  lastpingcall = micros();
+  radio.startListening();
 }
 
 void radioSendButton() {
@@ -72,6 +98,15 @@ void radioSendButton() {
       xmit[2] = '0';
     }
     buttonChanged &= ~(1<<BTN_G);
+  }
+  if (buttonChanged & 1<<BTN_Y) {
+    xmit[1] = '3';
+    if (buttonState[BTN_Y] == DOWN) {
+      xmit[2] = '1';
+    } else {
+      xmit[2] = '0';
+    }
+    buttonChanged &= ~(1<<BTN_Y);
   }
   radio.write(&xmit, sizeof(xmit));
   radio.startListening();
@@ -112,6 +147,9 @@ void applyBitmapSentence(char sentence[]) {
     addition, we always need to fast-forward past the first 2 bytes of the
     sentence.
     */
+    case 'b':
+      scr.setBrightness(sentence[2]);
+      break;
     case 'R':
       for (int i=0; i<8; i++) {
         scr.redbuffer[i] = sentence[2+(i*2)]<<8 | (sentence[2+(i*2)+1] & 0xFF);
@@ -126,8 +164,26 @@ void applyBitmapSentence(char sentence[]) {
   }
 }
 
+void handlePing(char sentence[]) {
+  switch (sentence[1]) {
+    /*
+    Ping sentences are either 'P0' (call) or 'P1' (response).
+    */
+    case CALL:
+      // We must answer
+      radioSendPing(RESPONSE);
+      break;
+    case RESPONSE:
+      /*
+      Hooray, we're not alone! We don't need to actually do anything here, since
+      every incoming message automatically bumps the lastcontact counter.
+      */
+      break;
+  }
+}
+
 // Pin-change handler for digital pins 0 - 7
-ISR (PCINT2_vect) {
+ISR (PCINT0_vect) {
   checkButtonStates();
 }
 
@@ -146,8 +202,9 @@ void setup() {
   radio.enableDynamicPayloads();
   radio.startListening();
 
-  //setupButton(BTN_G);
-  //setupButton(BTN_R);
+  setupButton(BTN_R);
+  setupButton(BTN_G);
+  setupButton(BTN_Y);
 
   scr.begin();
   tricolorWipe();
@@ -169,11 +226,27 @@ void loop() {
     radioSendButton();
   }
 
+  if (micros() - lastcontact > PINGTHRESH && micros() - lastpingcall > PINGTHRESH)  {
+    // Haven't heard from home base in a while. Ping?
+    radioSendPing(CALL);
+  }
+
+  if (micros() - lastcontact > WARNTHRESH) {
+    // Haven't heard from home in a LONG while. Warn the user!
+    uint16_t questionmark [] = { 0x0000,0x0ba0,0x28a8,0xa9aa,0xa92a,0x2828,0x0920,0x0000 };
+    for (int i=0; i<8; i++) {
+      scr.greenbuffer[i] = 0;
+      scr.redbuffer[i] = questionmark[i];
+    }
+    scr.writeDisplay();
+  }
+
   while (radio.available()) {
     uint8_t len = radio.getDynamicPayloadSize();
     if (!len) {
       continue;
     }
+    lastcontact = micros();
 
     // memset to wipe out previous "end-of-string" marker
     memset(receive_payload, 0, sizeof receive_payload);
@@ -183,6 +256,10 @@ void loop() {
         // Write something to the display
         applyBitmapSentence(receive_payload);
         scr.writeDisplay();
+        break;
+      case 'P':
+        // Incoming ping (call or response)
+        handlePing(receive_payload);
         break;
     }
   }

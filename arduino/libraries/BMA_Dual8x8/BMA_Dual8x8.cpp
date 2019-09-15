@@ -29,9 +29,11 @@ BMA_Dual8x8::BMA_Dual8x8(void) {
 
 void BMA_Dual8x8::setBrightness(uint8_t b) {
   if (b > 15) b = 15;
-  Wire.beginTransmission(i2c_addr[1]);
-  Wire.write(0xE0 | b);
-  Wire.endTransmission();
+  for (int i=0; i<2; i++) {
+    Wire.beginTransmission(i2c_addr[i]);
+    Wire.write(0xE0 | b);
+    Wire.endTransmission();
+  }
 }
 
 void BMA_Dual8x8::begin(void) {
@@ -39,6 +41,7 @@ void BMA_Dual8x8::begin(void) {
   i2c_addr[1] = 0x71;
   for (int i=0; i<2; i++) {
     Wire.begin();
+    Wire.setClock(400000); // Superfast!
     Wire.beginTransmission(i2c_addr[i]);
     Wire.write(0x21); // Activate the onboard oscillator
     Wire.endTransmission();

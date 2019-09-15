@@ -12,11 +12,11 @@ for m in range(100):
   for x in range(8):
     for z in range(8):
       if x == z:
-        headunit.fb['R'][z] = 0xFF
-        headunit.fb['G'][z] = 0xFF<<8
+        headunit.display.fb['R'][z] = 0xFF
+        headunit.display.fb['G'][z] = 0xFF<<8
       else:
-        headunit.fb['R'][z] = 0
-        headunit.fb['G'][z] = 0
+        headunit.display.fb['R'][z] = 0
+        headunit.display.fb['G'][z] = 0
     headunit.sendBuffer()
     time.sleep(0.1)
 

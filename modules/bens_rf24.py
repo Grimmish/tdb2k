@@ -2,7 +2,9 @@ import spidev
 import wiringpi2 as wpi
  
 class bens_rf24:
-  def __init__(self, debug=False):
+  def __init__(self, addr=0xE0E0E0E0E0, debug=False):
+    self.addr = addr
+
     self.debug = debug;
     if debug:
       print("Initializing RF24 via /dev/spidev0.0")
