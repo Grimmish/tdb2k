@@ -134,8 +134,11 @@ class rf24_headunit():
     elif self.menu.currentitem >= len(self.menu.currentlist):
       self.menu.currentitem -= len(self.menu.currentlist)
 
-    i = self.menu.currentlist[self.menu.currentitem]
-    newmatrix = self.buildMenuMatrix(i)
+    # FIXME Future "showfunction" feature probaby happens here
+    drawitem = self.menu.currentlist[self.menu.currentitem]
+    if 'showfunction' in drawitem:
+      drawitem = drawitem['showfunction'](drawitem, drawitem['show_args'])
+    newmatrix = self.buildMenuMatrix(drawitem)
     if slidedirection:
       return self.slideTransition(slidedirection, newmatrix, 0.03)
     else:

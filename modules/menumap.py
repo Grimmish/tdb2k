@@ -18,6 +18,12 @@
 #                             just return the first argument unchanged.
 #     do_args : Mandatory if 'dofunction' is defined. Contains a list object
 #               that will be passed to dofunction() as the second argument.
+#     showfunction : Works like "dofunction" above, but is executed just before
+#                    the item is displayed. Like dofunction, the return value of
+#                    becomes the new value for [current menu item].
+#     show_args : Mandatory if 'showfunction' is defined. Similar to 'do_args',
+#                 is a list object that will be passed to showfunction() as
+#                 the second argument.
 #     submenu : If defined, will descend into a further sublayer of menus
 #               within this object, following the same rules as the top-level
 #               menu definition. If a "dofunction" is also defined, it will be
