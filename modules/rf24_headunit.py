@@ -86,10 +86,11 @@ class rf24_headunit():
     matrix.drawPixart('pointerup', 13, 0, 'R')
     matrix.drawPixart('2x2square', 14, 3, 'Y')
     matrix.drawPixart('pointerdown', 13, 6, 'G')
+    lc = menuitem['labelcolor'] if 'labelcolor' in menuitem else 'Y'
     if menuitem['labeltype'] == 'string':
-      matrix.drawString(menuitem['label'], 0, 1, 'Y')
+      matrix.drawString(menuitem['label'], 0, 1, lc)
     elif menuitem['labeltype'] == 'pixart':
-      matrix.drawPixart(menuitem['label'], 0, 0, 'Y')
+      matrix.drawPixart(menuitem['label'], 0, 0, lc)
     else:
       matrix.drawString('??', 1, 1, 'R')
     # UI hints based on type

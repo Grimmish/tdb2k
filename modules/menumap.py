@@ -8,6 +8,7 @@
 #     labeltype : Nature of the 'label'. One of:
 #                   - string
 #                   - pixart
+#     labelcolor : OPTIONAL - One of 'R', 'G', or 'Y' (defaults to 'Y')
 #
 # Optional properties that shape behavior:
 #     dofunction : If defined, this function will be invoked when the item is
