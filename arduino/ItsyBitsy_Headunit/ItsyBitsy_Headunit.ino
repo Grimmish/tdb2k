@@ -67,10 +67,11 @@ void checkButtonStates() {
 
 void radioSendPing(char callorresponse) {
   radio.stopListening();
-  // Sentence construction: [Ping][0(call) or 1(response)]
-  char xmit[2];
+  // Sentence construction: [Ping][Device ID][0(call) or 1(response)]
+  char xmit[3];
   xmit[0] = 'P';
-  xmit[1] = callorresponse;
+  xmit[1] = '1';
+  xmit[2] = callorresponse;
   radio.write(&xmit, sizeof(xmit));
   lastpingcall = micros();
   radio.startListening();
@@ -197,6 +198,7 @@ ISR (PCINT0_vect) {
 void setup() {
   radio.begin();
   radio.openWritingPipe(0xE0E0E0E0E0);
+  // The last digit of the RX pipe is effectively this device's unique ID
   radio.openReadingPipe(1, 0xE1E1E1E1E1);
   radio.setPALevel(RF24_PA_MAX);
   radio.enableDynamicPayloads();

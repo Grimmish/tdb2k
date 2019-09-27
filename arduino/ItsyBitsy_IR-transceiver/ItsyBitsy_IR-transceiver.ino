@@ -28,11 +28,16 @@ RF24 radio(3, 2); // CE, CSN
 // pulsing at about 95 Hz while beam is unbroken.
 #define CUTOFF_ALARM_MS 15
 
+// Throw out pings at regular intervals so our radio partners
+// know they're within our transmission range (and we're alive)
+#define PING_INTERVAL_MS 5000
+
 volatile unsigned long lastVisiblePulse = 0;
 volatile int irstate = HIGH;
 bool beamBroken = false;
 bool lastBeamState = beamBroken;
 bool saturated = false;
+unsigned long lastPing = 0;
 
 void ledwalk() {
   digitalWrite(LED1, HIGH);
@@ -141,12 +146,21 @@ void irIntFire() {
   }
 }
 
+void sendPing() {
+  radio.stopListening();
+  char xmit[3];
+  xmit[0] = 'P';
+  xmit[1] = '2';
+  xmit[2] = '0';
+  radio.write(&xmit, sizeof(xmit));
+  radio.startListening();
+}
+
 void radioBroadcast(bool broken) {
   radio.stopListening();
-  // Sentence construction: [Ir unit][unit#][
   char xmit[3];
   xmit[0] = 'I';
-  xmit[1] = '1'; // Different value for every transceiver
+  xmit[1] = '2'; // Different value for every transceiver
   if (broken) {
     xmit[2] = '1';
   }
@@ -161,8 +175,8 @@ void radioBroadcast(bool broken) {
 void setup() {
   radio.begin();
   radio.openWritingPipe(0xE0E0E0E0E0);
-  // Library docs recommend using a different pipe for RX
-  radio.openReadingPipe(1, 0xE1E1E1E1E2);
+  // The last digit of the RX pipe is effectively this device's unique ID
+  radio.openReadingPipe(1, 0xE1E1E1E1E2); 
   radio.setPALevel(RF24_PA_MAX);
   radio.enableDynamicPayloads();
   radio.startListening();
@@ -232,6 +246,11 @@ void loop() {
       digitalWrite(LED3, LOW);
     }
     lastBeamState = beamBroken;
+  }
+
+  if (millis() - lastPing > PING_INTERVAL_MS) {
+    sendPing();
+    lastPing = millis();
   }
 }
 

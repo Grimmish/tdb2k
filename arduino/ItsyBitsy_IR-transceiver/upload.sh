@@ -11,8 +11,7 @@
 PROJECTNAME=ItsyBitsy_IR-transceiver
 DEVPATH=/dev/ttyACM0
 BOARDNAME=adafruit:avr:itsybitsy32u4_3V
-
-SKETCHBOOKPATH=/home/u00670/funstuff/tdb2k/arduino
+SKETCHBOOKPATH=`pwd`/..
 ARDUINO_IDE_PATH=/home/u00670/funstuff/arduino-1.6.8
 # End config (don't modify anything below)
 ###########################################
