@@ -12,11 +12,11 @@
 | B | Button ID: character |
 | I | Transceiver ID: character |
 | D | Red or green channel: 'R' or 'G' |
-| P | Call (0) or Response (1) |
+| P | ID of requesting device: character |
 
 | Bytes 2-31 |Payload |
 | --- | --- |
 | B | Button state: '1' (depressed) or '0' (release) |
 | I | IR beam state: '1' (broken) or '0' (steady) |
 | D | 16 bytes - on/off values for 16x8 grid:<br>1. Left-to-right<br>2. Top-to-bottom |
-| P | n/a |
+| P | Call (0) or Response (1) |
