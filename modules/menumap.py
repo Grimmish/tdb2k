@@ -109,7 +109,7 @@ infomenu = [
 mainmenu = [
   {
     'label': 'RUN',
-    'labeltype' 'string'
+    'labeltype': 'string'
   },
   {
     'label': 'WHO',

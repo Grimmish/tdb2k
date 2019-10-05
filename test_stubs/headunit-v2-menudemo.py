@@ -24,11 +24,11 @@ radio.set_rx_pipeline(chan=0, enable=1, addr=0xE0E0E0E0E0)
 headunit = rf24_headunit(radio=radio, addr=0xE1E1E1E1E1)
 headunit.radio.set_rx_mode()
 
-headunit.menu.tree[1]['dofunction'] = changePixmap
-headunit.menu.tree[1]['do_args'] = []
+#headunit.menu.tree[1]['dofunction'] = changePixmap
+#headunit.menu.tree[1]['do_args'] = []
 
-headunit.menu.tree[0]['submenu'][1]['showfunction'] = changeToSecs
-headunit.menu.tree[0]['submenu'][1]['show_args'] = []
+headunit.menu.tree[1]['submenu'][1]['showfunction'] = changeToSecs
+headunit.menu.tree[1]['submenu'][1]['show_args'] = []
 
 headunit.drawCurrentMenuItem()
 

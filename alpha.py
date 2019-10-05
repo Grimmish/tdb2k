@@ -31,9 +31,9 @@ def gps_handler(gpsdata):
       gpsdata["GGA"] = { "fixtime": fixtime,
                          "lat": lat,
                          "lon": lon,
-                         "quality": qual,
-                         "satellites": sats,
-                         "altitude": alt }
+                         "qual": qual,
+                         "sats": sats,
+                         "alt": alt }
 
 
 def radio_handler(radioqueue, radio):
@@ -46,17 +46,18 @@ def radio_handler(radioqueue, radio):
 
 
 def menuaction(menuitem, args):
+  global state
+  global stateset
   action = args[0]
   headunit = args[1]
   if action == "makeready":
     state = "ready"
     stateset = time.time()
-    headunit.display.floodColor('B')
-    headunit.display.drawString('RDY!', 0, 1, 'Y')
-    headunit.sendBuffer()
   return menuitem
 
 def mainthread():
+  global state
+  global stateset
   recorder = tdb2k_data()
   evtmgr = tdb2k_event()
   #gpio = tdb2k_gpio(startPin = 0,
@@ -121,7 +122,7 @@ def mainthread():
 
     if radioqueue['in'].qsize() > 0:
       inmsg = radioqueue['in'].get()
-      if inmsg.startswith("P0"):
+      if inmsg.startswith("P1"):
         headunit.sendBuffer()
 
       if state == "menu" and inmsg[0] == "B" and inmsg[2] == '1':
@@ -150,13 +151,30 @@ def mainthread():
         state = "postrun"
         stateset = time.time()
 
+    # Super-kludgy way to do screen changes on state change
+    if time.time() - stateset < 1:
+      if state == "ready":
+        headunit.display.floodColor('B')
+        headunit.display.drawString('RDY!', 0, 1, 'Y')
+        headunit.sendBuffer()
+      elif state == "run":
+        headunit.display.floodColor('B')
+        headunit.display.drawString('!GO!', 0, 1, 'G')
+        headunit.sendBuffer()
+      elif state == "postrun":
+        headunit.display.floodColor('B')
+        headunit.display.drawString('POST', 0, 1, 'R')
+        headunit.sendBuffer()
+      stateset -= 1
+
     if state == "postrun" and time.time() - stateset > 10:
       state = "menu"
       stateset = time.time()
       headunit.drawCurrentMenuItem()
 
     if gpsdata["GGA"] and recorder.active:
-      recorder.update(gps = {"lat": lat, "lon": lon, "alt": alt})
+      i = gpsdata["GGA"]
+      recorder.update(gps = {"lat": i['lat'], "lon": i['lon'], "alt": i['alt']})
       if recorder.ghost:
         delta = recorder.store[-1]["points"][-1]["delta"]
         window.timer.set('{+5.1f}'.format(delta))
