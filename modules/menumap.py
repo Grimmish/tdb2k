@@ -136,20 +136,19 @@ mainmenu = [
     'labeltype': 'string',
     'submenu': [
       {
-        'label': 'PTD',
+        'label': 'PIK',
         'labeltype': 'string',
-      },
-      {
-        'label': 'FTD',
-        'labeltype': 'string',
+        'submenu': [ ]
       },
       {
         'label': 'PRV',
         'labeltype': 'string',
+        'backbutton': True
       },
       {
         'label': 'OFF',
         'labeltype': 'string',
+        'backbutton': True
       },
       {
         'label': 'goback',
@@ -157,15 +156,15 @@ mainmenu = [
         'backbutton': True
       }
     ]
-  },
-  {
-    'label': 'CFG',
-    'labeltype': 'string',
-    'submenu': configmenu
-  },
-  {
-    'label': 'INF',
-    'labeltype': 'string',
-    'submenu': infomenu
   }
+  #{
+  #  'label': 'CFG',
+  #  'labeltype': 'string',
+  #  'submenu': configmenu
+  #},
+  #{
+  #  'label': 'INF',
+  #  'labeltype': 'string',
+  #  'submenu': infomenu
+  #}
 ]
