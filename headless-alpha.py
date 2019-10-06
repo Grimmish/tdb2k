@@ -46,7 +46,7 @@ def radio_handler(radioqueue, radio):
       # FIXME: Will we ever actually send raw packets out from this thread?
     if radio.rx_dr():
       inmsg = "".join(map(chr, radio.r_rx_payload()))
-      if inmsg[0] in ["B", "I", "P"] and not len(inmsg) == 3:
+      if not len(inmsg) == 3:
         continue #Sometimes messages get truncated. Ignore them.
       radioqueue['in'].put(inmsg)
 
